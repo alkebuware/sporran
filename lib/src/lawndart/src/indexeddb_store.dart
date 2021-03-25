@@ -44,21 +44,21 @@ class IndexedDbStore extends Store {
       _db!.close();
     }
 
-    final factory = getIdbFactory();
+    final factory = idb.getIdbFactory();
 
-    var db = await factory?.open(dbName!);
+    var db = await factory.open(dbName!);
 
-    if (db?.objectStoreNames.contains(storeName) != true) {
-      db?.close();
-      print('Attempting upgrading $storeName from ${db?.version}');
-      db = await factory?.open(dbName!, version: (db?.version ?? 0) + 1,
-          onUpgradeNeeded: (VersionChangeEvent e) {
+    if (db.objectStoreNames.contains(storeName) != true) {
+      db.close();
+      print('Attempting upgrading $storeName from ${db.version}');
+      db = await factory.open(dbName!, version: db.version + 1,
+          onUpgradeNeeded: (idb.VersionChangeEvent e) {
         final d = e.database;
         d.createObjectStore(storeName);
       });
     }
 
-    _databases[dbName] = db!;
+    _databases[dbName] = db;
   }
 
   idb.Database? get _db => _databases[dbName];

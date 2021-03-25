@@ -14,6 +14,9 @@ dependencies:
   idb_sqflite: 1.0.0
   shared_preferences: 2.0.5
   cross_connectivity: 3.0.2
+  sqflite: ^2.0.0+3
+  sqflite_common_ffi: ^2.0.0
+  process_run: ^0.12.1
 
 dev_dependencies:
   flutter_test:

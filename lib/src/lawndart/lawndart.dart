@@ -42,10 +42,11 @@ library lawndart;
 
 import 'dart:async';
 
-import 'package:idb_shim/idb_browser.dart';
-import 'package:idb_sqflite/idb_sqflite.dart' as idb;
-import 'package:idb_sqflite/idb_sqflite.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'src/idb/idb.dart'
+    if (dart.library.html) 'web.dart'
+    if (dart.library.io) 'io.dart' as idb;
 
 part 'src/indexeddb_store.dart';
 
