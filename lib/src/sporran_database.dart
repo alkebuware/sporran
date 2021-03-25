@@ -109,9 +109,12 @@ class _SporranDatabase {
   Map<String, JsonObjectLite<dynamic>> get pendingDeletes => _pendingDeletes;
 
   /// Event stream for Ready events
-  final dynamic _onReady = StreamController<void>.broadcast();
+  final StreamController _onReady = StreamController<void>.broadcast();
 
   Stream<dynamic>? get onReady => _onReady.stream;
+
+  /// Ready status
+  bool _isReady = false;
 
   /// Start change notifications
   void startChangeNotifications() {
@@ -194,8 +197,8 @@ class _SporranDatabase {
 
   /// Signal we are ready
   void _signalReady() {
-    final e = true;
-    _onReady.add(e);
+    _isReady = true;
+    _onReady.add(_isReady);
   }
 
   /// Create and/or connect to CouchDb

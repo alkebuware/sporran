@@ -44,16 +44,11 @@ import 'dart:async';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'src/idb/idb.dart'
-    if (dart.library.html) 'web.dart'
-    if (dart.library.io) 'io.dart' as idb;
+import 'src/idb/idb.dart' as idb;
 
 part 'src/indexeddb_store.dart';
-
 part 'src/local_storage_store.dart';
-
 part 'src/map_store.dart';
-
 part 'src/memory_store.dart';
 
 /// Represents a Store that can hold key/value pairs. No order

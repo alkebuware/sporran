@@ -32,19 +32,14 @@ class Sporran {
 
     // Online/offline listeners
     final connectivity = cc.Connectivity();
-    // connectivity.checkConnection().then((value){
-    //   if(value){
-    //     _transitionToOnline();
-    //   } else {
-    //     _online = false;
-    //   }
-    // });
     connectivity.onConnectivityChanged.listen((event) {
       switch (event) {
         case cc.ConnectivityStatus.wifi:
         case cc.ConnectivityStatus.mobile:
         case cc.ConnectivityStatus.ethernet:
-          _transitionToOnline();
+          if (_database._isReady) {
+            _transitionToOnline();
+          }
           break;
         case cc.ConnectivityStatus.none:
         case cc.ConnectivityStatus.unknown:
