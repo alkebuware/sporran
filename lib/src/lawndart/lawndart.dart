@@ -41,16 +41,19 @@
 library lawndart;
 
 import 'dart:async';
-import 'dart:html';
-import 'dart:indexed_db' as idb;
+
+import 'package:idb_shim/idb_browser.dart';
+import 'package:idb_sqflite/idb_sqflite.dart' as idb;
+import 'package:idb_sqflite/idb_sqflite.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 part 'src/indexeddb_store.dart';
+
+part 'src/local_storage_store.dart';
 
 part 'src/map_store.dart';
 
 part 'src/memory_store.dart';
-
-part 'src/local_storage_store.dart';
 
 /// Represents a Store that can hold key/value pairs. No order
 /// is guaranteed for either keys or values.

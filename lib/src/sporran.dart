@@ -31,8 +31,27 @@ class Sporran {
         initialiser.preserveLocal);
 
     // Online/offline listeners
-    window.onOnline.listen((_) => _transitionToOnline());
-    window.onOffline.listen((_) => _online = false);
+    final connectivity = cc.Connectivity();
+    // connectivity.checkConnection().then((value){
+    //   if(value){
+    //     _transitionToOnline();
+    //   } else {
+    //     _online = false;
+    //   }
+    // });
+    connectivity.onConnectivityChanged.listen((event) {
+      switch (event) {
+        case cc.ConnectivityStatus.wifi:
+        case cc.ConnectivityStatus.mobile:
+        case cc.ConnectivityStatus.ethernet:
+          _transitionToOnline();
+          break;
+        case cc.ConnectivityStatus.none:
+        case cc.ConnectivityStatus.unknown:
+          _online = false;
+          break;
+      }
+    });
   }
 
   /// Method constants

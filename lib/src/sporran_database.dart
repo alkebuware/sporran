@@ -92,11 +92,15 @@ class _SporranDatabase {
 
   /// Database name
   final _dbName;
+
   String get dbName => _dbName;
 
   /// CouchDb database is intact
   bool _noCouchDb = true;
+
   bool get noCouchDb => _noCouchDb;
+
+  /// CouchDb database is intact
 
   /// Pending delete queue
   final Map<String, JsonObjectLite<dynamic>> _pendingDeletes =
@@ -105,7 +109,7 @@ class _SporranDatabase {
   Map<String, JsonObjectLite<dynamic>> get pendingDeletes => _pendingDeletes;
 
   /// Event stream for Ready events
-  final dynamic _onReady = StreamController<Event>.broadcast();
+  final dynamic _onReady = StreamController<void>.broadcast();
 
   Stream<dynamic>? get onReady => _onReady.stream;
 
@@ -190,7 +194,7 @@ class _SporranDatabase {
 
   /// Signal we are ready
   void _signalReady() {
-    final e = Event.eventType('Event', 'SporranReady');
+    final e = true;
     _onReady.add(e);
   }
 
@@ -708,7 +712,7 @@ class _SporranDatabase {
       final attachmentKey = '$key-${attachment.name}-$attachmentMarkerc';
       attachmentToCreate.rev = WiltUserUtils.getDocumentRev(document);
       attachmentToCreate.contentType = attachment.data.content_type;
-      attachmentToCreate.payload = window.btoa(attachment.data.data);
+      attachmentToCreate.payload = base64Encode(attachment.data.data);
 
       updateLocalStorageObject(
           attachmentKey, attachmentToCreate, attachmentToCreate.rev, updatedc);

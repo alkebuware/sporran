@@ -17,7 +17,9 @@ part of lawndart;
 /// Wraps the local storage API and exposes it as a [Store].
 /// Local storage is a synchronous API, and generally not recommended
 /// unless all other storage mechanisms are unavailable.
-class LocalStorageStore extends _MapStore {
+class LocalStorageStore extends Store {
+  late SharedPreferences _prefs;
+
   LocalStorageStore._() : super._();
 
   /// Open the local storage
@@ -28,5 +30,56 @@ class LocalStorageStore extends _MapStore {
   }
 
   @override
-  Map<String, String> _generateMap() => window.localStorage;
+  Future<void> _open() async {
+    _prefs = await SharedPreferences.getInstance();
+  }
+
+  @override
+  Stream<String> all() async* {
+    for (final key in _prefs.getKeys()) {
+      yield _prefs.getString(key)!;
+    }
+  }
+
+  @override
+  Future<void> batch(Map<String, String> objectsByKey) async {
+    for (final key in objectsByKey.keys) {
+      await _prefs.setString(key, objectsByKey[key]!);
+    }
+  }
+
+  @override
+  Future<bool> exists(String key) async => _prefs.containsKey(key);
+
+  @override
+  Future getByKey(String key) async => _prefs.getString(key);
+
+  @override
+  Stream<String> getByKeys(Iterable<String> keys) async* {
+    for (final key in keys) {
+      yield _prefs.getString(key)!;
+    }
+  }
+
+  @override
+  Stream<String> keys() => Stream.fromIterable(_prefs.getKeys());
+
+  @override
+  Future<void> nuke() => _prefs.clear();
+
+  @override
+  Future<void> removeByKey(String key) => _prefs.remove(key);
+
+  @override
+  Future<void> removeByKeys(Iterable<String> keys) async {
+    for (final key in keys) {
+      await _prefs.remove(key);
+    }
+  }
+
+  @override
+  Future<String> save(String obj, String key) async {
+    await _prefs.setString(key, obj);
+    return obj;
+  }
 }

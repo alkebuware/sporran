@@ -40,27 +40,25 @@ class IndexedDbStore extends Store {
 
   @override
   Future<void> _open() async {
-    if (!supported) {
-      throw UnsupportedError('IndexedDB is not supported on this platform');
-    }
-
     if (_db != null) {
       _db!.close();
     }
 
-    var db = await window.indexedDB!.open(dbName!);
+    final factory = getIdbFactory();
 
-    if (!db.objectStoreNames!.contains(storeName)) {
-      db.close();
-      //print('Attempting upgrading $storeName from ${db.version}');
-      db = await window.indexedDB!.open(dbName!, version: db.version! + 1,
-          onUpgradeNeeded: (dynamic e) {
-        final idb.Database d = e.target.result;
+    var db = await factory?.open(dbName!);
+
+    if (db?.objectStoreNames.contains(storeName) != true) {
+      db?.close();
+      print('Attempting upgrading $storeName from ${db?.version}');
+      db = await factory?.open(dbName!, version: (db?.version ?? 0) + 1,
+          onUpgradeNeeded: (VersionChangeEvent e) {
+        final d = e.database;
         d.createObjectStore(storeName);
       });
     }
 
-    _databases[dbName] = db;
+    _databases[dbName] = db!;
   }
 
   idb.Database? get _db => _databases[dbName];
@@ -100,7 +98,7 @@ class IndexedDbStore extends Store {
 
   @override
   Stream<String> all() =>
-      _doGetAll((idb.CursorWithValue? cursor) => cursor!.value);
+      _doGetAll((idb.CursorWithValue? cursor) => cursor?.value as String);
 
   @override
   Future<void> batch(Map<String, String> objectsByKey) {

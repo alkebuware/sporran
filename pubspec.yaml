@@ -7,11 +7,18 @@ environment:
   sdk: '>=2.12.0 <3.0.0'
 
 dependencies:
+  flutter:
+    sdk: flutter
   wilt: '^6.0.0'
   json_object_lite: '^3.0.0'
+  idb_sqflite: 1.0.0
+  shared_preferences: 2.0.5
+  cross_connectivity: 3.0.2
 
 dev_dependencies:
-  test: '^1.16.8'
+  flutter_test:
+    sdk: flutter
+  test: '1.16.5'
   pedantic: '^1.11.0'
   build_runner: '^1.12.1'
   build_test: '^2.0.0'
