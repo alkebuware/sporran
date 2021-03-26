@@ -5,8 +5,8 @@
  * Copyright :  S.Hamblett
  */
 
-import 'package:sporran/sporran.dart';
 import 'package:json_object_lite/json_object_lite.dart';
+import 'package:sporran/sporran.dart';
 
 // ignore: avoid_relative_lib_imports
 import '../test/lib/sporran_test_config.dart';
@@ -20,7 +20,7 @@ void main() async {
   initialiser.hostname = hostName;
   initialiser.manualNotificationControl = true;
   initialiser.port = port;
-  initialiser.scheme = scheme;
+  initialiser.useSSL = useSSL;
   initialiser.username = userName;
   initialiser.password = userPassword;
   initialiser.preserveLocal = false;

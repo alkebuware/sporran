@@ -25,10 +25,11 @@ class Sporran {
         initialiser.hostname,
         initialiser.manualNotificationControl,
         initialiser.port,
-        initialiser.scheme,
+        initialiser.useSSL,
         initialiser.username,
         initialiser.password,
-        initialiser.preserveLocal);
+        initialiser.preserveLocal,
+        initialiser.path);
 
     // Online/offline listeners
     final connectivity = cc.Connectivity();
@@ -59,6 +60,11 @@ class Sporran {
   static const String bulkCreatec = 'bulk_create';
   static const String getAllDocsc = 'get_all_docs';
   static const String dbInfoc = 'db_info';
+
+  /// Print internal exceptions, errors, and general event logging
+  set logging(bool v) => loggingEnabled = v;
+
+  bool get logging => loggingEnabled;
 
   /// Database
   late _SporranDatabase _database;
@@ -776,15 +782,38 @@ class Sporran {
   Future<JsonObjectLite<dynamic>> getAllDocs(
       {bool includeDocs = false,
       int limit = 10,
-      String startKey = '',
-      String endKey = '',
-      List<String> keys = const <String>[],
+      String? startKey,
+      String? endKey,
+      List<String>? keys,
       bool descending = false}) {
     final opCompleter = Completer<JsonObjectLite<dynamic>>();
 
     /* Check for offline, if so try the get from local storage */
     if (!online) {
-      if (keys.isEmpty) {
+      if (keys?.isNotEmpty == true) {
+        _database.getLocalStorageObjects(keys ?? []).then((dynamic documents) {
+          final dynamic res = JsonObjectLite<dynamic>();
+          res.localResponse = true;
+          res.operation = getAllDocsc;
+          res.id = null;
+          res.rev = null;
+          if (documents == null) {
+            res.ok = false;
+            res.payload = null;
+          } else {
+            res.ok = true;
+            res.payload = documents;
+            res.totalRows = documents.length;
+            res.keyList = documents.keys.toList();
+          }
+
+          opCompleter.complete(res);
+          if (_clientCompleter != null) {
+            _completionResponse = _createCompletionResponse(res);
+            _clientCompleter();
+          }
+        });
+      } else {
         /* Get all the keys from Lawndart */
         _database.lawndart.keys().toList().then((dynamic keyList) {
           /* Only return documents */
@@ -822,29 +851,6 @@ class Sporran {
               _clientCompleter();
             }
           });
-        });
-      } else {
-        _database.getLocalStorageObjects(keys).then((dynamic documents) {
-          final dynamic res = JsonObjectLite<dynamic>();
-          res.localResponse = true;
-          res.operation = getAllDocsc;
-          res.id = null;
-          res.rev = null;
-          if (documents == null) {
-            res.ok = false;
-            res.payload = null;
-          } else {
-            res.ok = true;
-            res.payload = documents;
-            res.totalRows = documents.length;
-            res.keyList = documents.keys.toList();
-          }
-
-          opCompleter.complete(res);
-          if (_clientCompleter != null) {
-            _completionResponse = _createCompletionResponse(res);
-            _clientCompleter();
-          }
         });
       }
     } else {

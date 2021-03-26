@@ -44,6 +44,7 @@ import 'dart:async';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../logger.dart';
 import 'src/idb/idb.dart' as idb;
 
 part 'src/indexeddb_store.dart';

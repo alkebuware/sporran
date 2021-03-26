@@ -15,11 +15,9 @@ import 'package:json_object_lite/json_object_lite.dart';
 import 'package:wilt/wilt.dart';
 
 import 'src/lawndart/lawndart.dart';
+import 'src/logger.dart';
 
 part 'src/sporran.dart';
-
 part 'src/sporran_database.dart';
-
 part 'src/sporran_exception.dart';
-
 part 'src/sporran_initialiser.dart';

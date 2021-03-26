@@ -15,11 +15,14 @@ class SporranInitialiser {
   /// Hostname
   String hostname = '';
 
+  /// Url path
+  String path = '';
+
   /// Port
   int port = 5984;
 
-  /// Scheme
-  String scheme = 'http://';
+  /// Scheme http:// or https://
+  bool useSSL = false;
 
   /// Username
   String username = '';

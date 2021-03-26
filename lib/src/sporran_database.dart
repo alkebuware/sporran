@@ -23,10 +23,11 @@ class _SporranDatabase {
   _SporranDatabase(this._dbName, this._host,
       [this._manualNotificationControl = false,
       this._port = 5984,
-      this._scheme = 'http://',
+      this._useSSL = false,
       this._user = '',
       this._password = '',
-      this._preserveLocalDatabase = false]) {
+      this._preserveLocalDatabase = false,
+      this._path = '']) {
     _initialise();
   }
 
@@ -43,7 +44,7 @@ class _SporranDatabase {
       await _lawndart.nuke();
     }
     // Instantiate a Wilt object
-    _wilt = Wilt(_host, port: _port);
+    _wilt = _createWilt();
     // Login
     if (_user.isNotEmpty) {
       _wilt.login(_user, _password);
@@ -52,17 +53,22 @@ class _SporranDatabase {
     connectToCouch();
   }
 
+  Wilt _createWilt() => Wilt(host, port: port, useSSL: _useSSL, path: _path);
+
   /// Host name
   final _host;
+
   String get host => _host;
 
   /// Port number
   final int _port;
+
   int get port => _port;
 
-  /// HTTP scheme
-  final String _scheme;
-  String get scheme => _scheme;
+  /// HTTP scheme https:// || http://
+  final bool _useSSL;
+
+  bool get useSSL => _useSSL;
 
   /// Authentication, user name
   String _user;
@@ -70,8 +76,12 @@ class _SporranDatabase {
   /// Authentication, user password
   String _password;
 
+  /// Base url path for couchdb
+  String _path;
+
   /// Manual notification control
   final bool _manualNotificationControl;
+
   bool get manualNotificationControl => _manualNotificationControl;
 
   /// Local database preservation
@@ -205,7 +215,9 @@ class _SporranDatabase {
   void connectToCouch([bool transitionToOnline = false]) {
     /// If the CouchDb database does not exist create it.
     void createCompleter(dynamic res) {
+      log(res);
       if (!res.error) {
+        log('Error response from Couch');
         _wilt.db = _dbName!;
         _noCouchDb = false;
       } else {
@@ -233,6 +245,7 @@ class _SporranDatabase {
     }
 
     void allCompleter(dynamic res) {
+      log(res);
       if (!res.error) {
         final JsonObjectLite<dynamic> successResponse = res.jsonCouchResponse;
         final created = successResponse.contains(_dbName);
@@ -257,8 +270,8 @@ class _SporranDatabase {
           }
 
           /**
-          * Signal we are ready
-          */
+           * Signal we are ready
+           */
           _signalReady();
         }
       } else {
@@ -270,6 +283,8 @@ class _SporranDatabase {
     _wilt.getAllDbs()
       ..then(allCompleter)
       ..catchError((dynamic error) {
+        log('error connecting to couch');
+        log(error);
         _noCouchDb = true;
         _signalReady();
       });
@@ -304,7 +319,7 @@ class _SporranDatabase {
     }
 
     /* Create our own Wilt instance */
-    final wilting = Wilt(_host, port: _port);
+    final wilting = _createWilt();
 
     /* Login if we are using authentication */
     if (_user.isNotEmpty) {
@@ -432,7 +447,7 @@ class _SporranDatabase {
   /// Couch wins.
   void delete(String key, String revision) {
     /* Create our own Wilt instance */
-    final wilting = Wilt(_host, port: _port);
+    final wilting = _createWilt();
 
     /* Login if we are using authentication */
     if (_user.isNotEmpty) {
@@ -453,7 +468,7 @@ class _SporranDatabase {
   /// Couch wins.
   void deleteAttachment(String key, String name, String revision) {
     /* Create our own Wilt instance */
-    final wilting = Wilt(_host, port: _port);
+    final wilting = _createWilt();
 
     /* Login if we are using authentication */
     if (_user.isNotEmpty) {
@@ -472,7 +487,7 @@ class _SporranDatabase {
   FutureOr<void> updateAttachment(String key, String name, String revision,
       String contentType, String payload) async {
     /* Create our own Wilt instance */
-    final wilting = Wilt(_host, port: _port);
+    final wilting = _createWilt();
 
     /* Login if we are using authentication */
     if (_user.isNotEmpty) {
@@ -532,7 +547,7 @@ class _SporranDatabase {
     final completer = Completer<String>();
 
     /* Create our own Wilt instance */
-    final wilting = Wilt(_host, port: _port);
+    final wilting = _createWilt();
 
     /* Login if we are using authentication */
     if (_user.isNotEmpty) {
@@ -587,7 +602,7 @@ class _SporranDatabase {
     final completer = Completer<JsonObjectLite<dynamic>>();
 
     /* Create our own Wilt instance */
-    final wilting = Wilt(_host, port: _port);
+    final wilting = _createWilt();
 
     /* Login if we are using authentication */
     if (_user.isNotEmpty) {

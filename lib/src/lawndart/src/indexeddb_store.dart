@@ -50,12 +50,18 @@ class IndexedDbStore extends Store {
 
     if (db.objectStoreNames.contains(storeName) != true) {
       db.close();
-      print('Attempting upgrading $storeName from ${db.version}');
-      db = await factory.open(dbName!, version: db.version + 1,
-          onUpgradeNeeded: (idb.VersionChangeEvent e) {
-        final d = e.database;
-        d.createObjectStore(storeName);
-      });
+      log('Attempting upgrading $storeName from ${db.version}');
+      try {
+        db = await factory.open(dbName!, version: db.version + 1,
+            onUpgradeNeeded: (idb.VersionChangeEvent e) {
+          final d = e.database;
+          d.createObjectStore(storeName);
+        });
+      } on idb.DatabaseException catch (e, s) {
+        log('Upgrade attempt failed');
+        log(e);
+        log(s);
+      }
     }
 
     _databases[dbName] = db;

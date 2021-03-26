@@ -3,7 +3,7 @@
 /* CouchDB server */
 const String hostName = 'localhost';
 const int port = 5984;
-const String scheme = 'http://';
+const bool useSSL = false;
 
 /* Database to use for testing */
 String databaseName = 'sporrantest';

@@ -26,7 +26,7 @@ void main() async {
   initialiser.hostname = hostName;
   initialiser.manualNotificationControl = true;
   initialiser.port = port;
-  initialiser.scheme = scheme;
+  initialiser.useSSL = false;
   initialiser.username = userName;
   initialiser.password = userPassword;
   initialiser.preserveLocal = false;

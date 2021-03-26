@@ -4,12 +4,12 @@
  * Date   : 05/02/2014
  * Copyright :  S.Hamblett@OSCF
  */
-@TestOn('browser')
-
-import 'package:sporran/sporran.dart';
 import 'package:json_object_lite/json_object_lite.dart';
-import 'package:wilt/wilt.dart';
+@TestOn('browser')
+import 'package:sporran/sporran.dart';
 import 'package:test/test.dart';
+import 'package:wilt/wilt.dart';
+
 import 'sporran_test_config.dart';
 
 void main() async {
@@ -19,7 +19,7 @@ void main() async {
   initialiser.hostname = hostName;
   initialiser.manualNotificationControl = false;
   initialiser.port = port;
-  initialiser.scheme = scheme;
+  initialiser.useSSL = false;
   initialiser.username = userName;
   initialiser.password = userPassword;
   initialiser.preserveLocal = false;
