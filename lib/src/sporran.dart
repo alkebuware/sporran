@@ -120,6 +120,8 @@ class Sporran {
   /// Ready event
   Stream<dynamic>? get onReady => _database.onReady;
 
+  bool get isReady => _database.isReady;
+
   /// Manual notification control
   bool get manualNotificationControl => _database.manualNotificationControl;
 

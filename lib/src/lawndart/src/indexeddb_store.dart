@@ -95,6 +95,7 @@ class IndexedDbStore extends Store {
 
   Stream<String> _doGetAll(
       String? Function(idb.CursorWithValue?) onCursor) async* {
+    print("****************_doGetAll");
     final trans = _db!.transaction(storeName, 'readonly');
     final store = trans.objectStore(storeName);
     await for (final dynamic cursor in store.openCursor(autoAdvance: true)) {

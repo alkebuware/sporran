@@ -35,6 +35,7 @@ class _SporranDatabase {
   static const String notUpdatedc = 'not_updated';
   static const String updatedc = 'updated';
   static const String attachmentMarkerc = 'sporranAttachment';
+  static const String lastChangeSequenceKey = 'sporranLastSequence';
 
   Future<dynamic> _initialise() async {
     _lawndart = await IndexedDbStore.open(_dbName, 'Sporran');
@@ -89,10 +90,12 @@ class _SporranDatabase {
 
   /// The Wilt database
   late Wilt _wilt;
+
   Wilt get wilt => _wilt;
 
   /// The Lawndart database
   late Store _lawndart;
+
   Store get lawndart => _lawndart;
 
   /// Lawn is open indicator
@@ -126,9 +129,15 @@ class _SporranDatabase {
   /// Ready status
   bool _isReady = false;
 
+  bool get isReady => _isReady;
+
   /// Start change notifications
-  void startChangeNotifications() {
-    final parameters = WiltChangeNotificationParameters();
+  Future<void> startChangeNotifications() async {
+    final since = await _lawndart.getByKey(lastChangeSequenceKey);
+    print("original since: ${since}");
+    final parameters = WiltChangeNotificationParameters()
+      ..heartbeat = 10000
+      ..since = since;
     parameters.includeDocs = true;
     _wilt.startChangeNotification(parameters);
 
@@ -143,6 +152,9 @@ class _SporranDatabase {
         e.type == WiltChangeNotificationEvent.deletee)) {
       return;
     }
+
+    print("saving: ${e.sequenceNumber}");
+    unawaited(_lawndart.save(lastChangeSequenceKey, e.sequenceNumber));
 
     /* Process the update or delete event */
     if (e.type == WiltChangeNotificationEvent.updatee) {
@@ -214,7 +226,7 @@ class _SporranDatabase {
   /// Create and/or connect to CouchDb
   void connectToCouch([bool transitionToOnline = false]) {
     /// If the CouchDb database does not exist create it.
-    void createCompleter(dynamic res) {
+    void createCompleter(dynamic res) async {
       log(res);
       if (!res.error) {
         log('Error response from Couch');
@@ -228,7 +240,7 @@ class _SporranDatabase {
        * Start change notifications
        */
       if (!manualNotificationControl) {
-        startChangeNotifications();
+        await startChangeNotifications();
       }
 
       /**
@@ -244,13 +256,13 @@ class _SporranDatabase {
       _signalReady();
     }
 
-    void allCompleter(dynamic res) {
+    void allCompleter(dynamic res) async {
       log(res);
       if (!res.error) {
         final JsonObjectLite<dynamic> successResponse = res.jsonCouchResponse;
         final created = successResponse.contains(_dbName);
         if (created == false) {
-          _wilt.createDatabase(_dbName!).then(createCompleter);
+          unawaited(_wilt.createDatabase(_dbName!).then(createCompleter));
         } else {
           _wilt.db = _dbName;
           _noCouchDb = false;
@@ -259,7 +271,7 @@ class _SporranDatabase {
            * Start change notifications
            */
           if (!manualNotificationControl) {
-            startChangeNotifications();
+            await startChangeNotifications();
           }
 
           /**
@@ -686,8 +698,8 @@ class _SporranDatabase {
     final attachmentsToUpdate = <String, JsonObjectLite<dynamic>>{};
 
     /**
-    * Get a list of non updated documents and attachments from Lawndart
-    */
+     * Get a list of non updated documents and attachments from Lawndart
+     */
     lawndart.all().listen((String document) {
       final doc = JsonObjectLite<dynamic>.fromJsonString(document);
       final String? key = doc['key'];
@@ -722,19 +734,19 @@ class _SporranDatabase {
   /// Create document attachments
   void createDocumentAttachments(String key, JsonObjectLite<dynamic> document) {
     /* Get the attachments and create them locally */
-    final attachments = WiltUserUtils.getAttachments(document);
-
-    for (final dynamic attachment in attachments) {
-      final dynamic attachmentToCreate = JsonObjectLite<dynamic>();
-      attachmentToCreate.attachmentName = attachment.name;
-      final attachmentKey = '$key-${attachment.name}-$attachmentMarkerc';
-      attachmentToCreate.rev = WiltUserUtils.getDocumentRev(document);
-      attachmentToCreate.contentType = attachment.data.content_type;
-      attachmentToCreate.payload = base64Encode(attachment.data.data);
-
-      updateLocalStorageObject(
-          attachmentKey, attachmentToCreate, attachmentToCreate.rev, updatedc);
-    }
+    // final attachments = WiltUserUtils.getAttachments(document);
+    //
+    // for (final dynamic attachment in attachments) {
+    //   final dynamic attachmentToCreate = JsonObjectLite<dynamic>();
+    //   attachmentToCreate.attachmentName = attachment.name;
+    //   final attachmentKey = '$key-${attachment.name}-$attachmentMarkerc';
+    //   attachmentToCreate.rev = WiltUserUtils.getDocumentRev(document);
+    //   attachmentToCreate.contentType = attachment.data.content_type;
+    //   attachmentToCreate.payload = base64Encode(attachment.data.data);
+    //
+    //   updateLocalStorageObject(
+    //       attachmentKey, attachmentToCreate, attachmentToCreate.rev, updatedc);
+    // }
   }
 
   /// Login
