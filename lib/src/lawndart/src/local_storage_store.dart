@@ -62,7 +62,7 @@ class LocalStorageStore extends Store {
   }
 
   @override
-  Stream<String> keys() => Stream.fromIterable(_prefs.getKeys());
+  Stream<String> keys({String? startsWith}) => Stream.fromIterable(_prefs.getKeys());
 
   @override
   Future<void> nuke() => _prefs.clear();

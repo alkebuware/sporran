@@ -42,10 +42,11 @@ library lawndart;
 
 import 'dart:async';
 
+import 'package:idb_cc/idb_cc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../logger.dart';
-import 'src/idb/idb.dart' as idb;
+import 'package:idb_cc/idb_cc.dart' as idb;
 
 part 'src/indexeddb_store.dart';
 part 'src/local_storage_store.dart';
@@ -63,7 +64,7 @@ abstract class Store {
       [Map<String, String>? options]) async {
     Store store;
     if (IndexedDbStore.supported) {
-      store = IndexedDbStore._(dbName, storeName);
+      store = IndexedDbStore._(dbName);
     } else {
       store = LocalStorageStore._();
     }
@@ -77,7 +78,7 @@ abstract class Store {
   Future<void> _open();
 
   /// Returns all the keys as a stream. No order is guaranteed.
-  Stream<String> keys();
+  Stream<String> keys({String? startsWith});
 
   /// Stores an [obj] accessible by [key].
   /// The returned Future completes with the key when the objects

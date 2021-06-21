@@ -2,6 +2,7 @@ name: sporran
 version: 6.0.0
 description: A PouchDB alike for Dart. Uses lawndart for local storage and Wilt for CouchDB access.
 homepage: https://github.com/shamblett/sporran
+publish_to: none
 
 environment:
   sdk: '>=2.12.0 <3.0.0'
@@ -10,15 +11,12 @@ dependencies:
   flutter:
     sdk: flutter
   wilt:
-    path: '../wilt'
+    path: ../wilt
   json_object_lite: '^3.0.0'
-  idb_sqflite: 1.0.0
   shared_preferences: 2.0.5
   cross_connectivity: 3.0.2
-  sqflite: ^2.0.0+3
-  sqflite_common_ffi: ^2.0.0
-  process_run: ^0.12.1
-  stack_trace: ^1.10.0
+  idb_cc:
+    path: ../idb_cc
 
 dev_dependencies:
   flutter_test:

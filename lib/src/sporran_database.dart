@@ -38,7 +38,8 @@ class _SporranDatabase {
   static const String lastChangeSequenceKey = 'sporranLastSequence';
 
   Future<dynamic> _initialise() async {
-    _lawndart = await IndexedDbStore.open(_dbName, 'Sporran');
+    // TODO: check if Store.open works fine as well
+    _lawndart = await IndexedDbStore.open(_dbName);
     _lawnIsOpen = true;
     // Delete the local database unless told to preserve it.
     if (!_preserveLocalDatabase) {
@@ -154,7 +155,7 @@ class _SporranDatabase {
     }
 
     print("saving: ${e.sequenceNumber}");
-    unawaited(_lawndart.save(lastChangeSequenceKey, e.sequenceNumber));
+    unawaited(_lawndart.save(e.sequenceNumber, lastChangeSequenceKey));
 
     /* Process the update or delete event */
     if (e.type == WiltChangeNotificationEvent.updatee) {
@@ -167,24 +168,21 @@ class _SporranDatabase {
       final attachments = WiltUserUtils.getAttachments(e.document);
       final attachmentsToDelete = <String>[];
 
-      /* For all the keys... */
-      _lawndart.keys().listen((String key) {
+      /* For all the keys that start with docId... */
+      _lawndart.keys(startsWith: e.docId).listen((String key) {
         /* If an attachment... */
         final keyList = key.split('-');
         if ((keyList.length == 3) && (keyList[2] == attachmentMarkerc)) {
-          /* ...for this document... */
-          if (e.docId == keyList[0]) {
-            /* ..potentially now deleted... */
-            attachmentsToDelete.add(key);
+          /* ..potentially now deleted... */
+          attachmentsToDelete.add(key);
 
-            /* ...check against all the documents current attachments */
-            for (final dynamic attachment in attachments) {
-              if ((keyList[1] == attachment.name) &&
-                  (keyList[0] == e.docId) &&
-                  (keyList[2] == attachmentMarkerc)) {
-                /* If still valid remove it from the delete list */
-                attachmentsToDelete.remove(key);
-              }
+          /* ...check against all the documents current attachments */
+          for (final dynamic attachment in attachments) {
+            if ((keyList[1] == attachment.name) &&
+                (keyList[0] == e.docId) &&
+                (keyList[2] == attachmentMarkerc)) {
+              /* If still valid remove it from the delete list */
+              attachmentsToDelete.remove(key);
             }
           }
         }
@@ -257,7 +255,6 @@ class _SporranDatabase {
     }
 
     void allCompleter(dynamic res) async {
-      log(res);
       if (!res.error) {
         final JsonObjectLite<dynamic> successResponse = res.jsonCouchResponse;
         final created = successResponse.contains(_dbName);

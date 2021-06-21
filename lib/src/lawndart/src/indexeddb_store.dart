@@ -18,7 +18,7 @@ part of lawndart;
 /// IndexedDB is generally the preferred API if it is available.
 class IndexedDbStore extends Store {
   /// Construction
-  IndexedDbStore._(this.dbName, this.storeName) : super._();
+  IndexedDbStore._(this.dbName) : super._();
 
   static final Map<String, idb.Database> _databases = <String, idb.Database>{};
 
@@ -26,11 +26,11 @@ class IndexedDbStore extends Store {
   final dbName;
 
   /// Store name
-  final storeName;
+  final storeName = 'Sporran';
 
   /// Open
-  static Future<IndexedDbStore> open(String dbName, String storeName) async {
-    final store = IndexedDbStore._(dbName, storeName);
+  static Future<IndexedDbStore> open(String dbName) async {
+    final store = IndexedDbStore._(dbName);
     await store._open();
     return store;
   }
@@ -46,23 +46,10 @@ class IndexedDbStore extends Store {
 
     final factory = idb.getIdbFactory();
 
-    var db = await factory.open(dbName!);
-
-    if (db.objectStoreNames.contains(storeName) != true) {
-      db.close();
-      log('Attempting upgrading $storeName from ${db.version}');
-      try {
-        db = await factory.open(dbName!, version: db.version + 1,
-            onUpgradeNeeded: (idb.VersionChangeEvent e) {
-          final d = e.database;
-          d.createObjectStore(storeName);
-        });
-      } on idb.DatabaseException catch (e, s) {
-        log('Upgrade attempt failed');
-        log(e);
-        log(s);
-      }
-    }
+    var db = await factory.open(dbName!, version: 1, onUpgradeNeeded: (event) {
+      log('Attempting upgrading ${event.database.name} from version ${event.newVersion} to ${event.oldVersion}');
+      event.database.createObjectStore(storeName);
+    });
 
     _databases[dbName] = db;
   }
@@ -93,14 +80,21 @@ class IndexedDbStore extends Store {
     return result;
   }
 
-  Stream<String> _doGetAll(
-      String? Function(idb.CursorWithValue?) onCursor) async* {
+  Stream<String> _doGetAll(String? Function(idb.CursorWithValue?) onCursor,
+      {String? startsWith}) async* {
     print("****************_doGetAll");
     final trans = _db!.transaction(storeName, 'readonly');
     final store = trans.objectStore(storeName);
-    await for (final dynamic cursor in store.openCursor(autoAdvance: true)) {
+    KeyRange? range;
+    if (startsWith != null) {
+      range = KeyRange.bound(startsWith, "$startsWith\uffff");
+    }
+    await for (final dynamic cursor
+        in store.openCursor(autoAdvance: true, range: range)) {
       yield onCursor(cursor)!;
     }
+    await trans.completed;
+    print("***************afterOpenCursor await for");
   }
 
   @override
@@ -109,7 +103,6 @@ class IndexedDbStore extends Store {
 
   @override
   Future<void> batch(Map<String, String> objectsByKey) {
-    // ignore: missing_return
     return _runInTxn((dynamic store) {
       objectsByKey.forEach((dynamic k, dynamic v) {
         store.put(v, k);
@@ -144,6 +137,7 @@ class IndexedDbStore extends Store {
   }
 
   @override
-  Stream<String> keys() =>
-      _doGetAll((idb.CursorWithValue? cursor) => cursor!.key as String?);
+  Stream<String> keys({String? startsWith}) =>
+      _doGetAll((idb.CursorWithValue? cursor) => cursor!.key as String?,
+          startsWith: startsWith);
 }

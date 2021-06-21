@@ -6,5 +6,8 @@
 include: package:pedantic/analysis_options.yaml
 
 analyzer:
+  errors:
+    prefer_single_quotes: ignore
+    unawaited_futures: ignore
   exclude:
     - test/issues/**

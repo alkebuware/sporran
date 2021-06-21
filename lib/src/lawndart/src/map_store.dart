@@ -27,7 +27,7 @@ abstract class _MapStore extends Store {
   Map<String, String> _generateMap();
 
   @override
-  Stream<String> keys() async* {
+  Stream<String> keys({String? startsWith}) async* {
     for (final k in storage.keys) {
       yield k;
     }
